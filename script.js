@@ -10,7 +10,7 @@ const noButton = document.getElementById("noButton");
 
 // ---------- Settings ----------
 const COLORS = ["#ff7a9c", "#f03e5f", "#ffb3c6", "#c9184a", "#ffffff"];
-const NO_MESSAGES = ["No", "Nice try!", "Too slow!", "Catch me!", "Nope!", "Try again!"];
+const NO_MESSAGES = ["No", "Nice try!", "Too slow!", "Catch me!", "Nope!", "Try again!", "Wag naman eto!"];
 const SAFE_PADDING = 24;         // the No button never goes closer than this to any screen edge
 const DODGE_DISTANCE = 70;       // how close the pointer can get before the button runs away
 const DODGE_COOLDOWN_MS = 120;   // stops it from jittering while mid-flight
