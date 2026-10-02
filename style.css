@@ -115,9 +115,9 @@ h1 {
   white-space: nowrap;
 }
 
-/* Once it starts running away, the No button is positioned against the viewport */
+/* Once it starts running away, the No button is positioned inside the full-screen stage */
 .btn-no.is-floating {
-  position: fixed;
+  position: absolute;
   z-index: 5;
   margin: 0;
   transition: left 0.38s cubic-bezier(0.2, 0.9, 0.3, 1), top 0.38s cubic-bezier(0.2, 0.9, 0.3, 1);
@@ -178,6 +178,121 @@ h1 {
 .card.is-celebrating .sub { animation: pop-in 0.6s 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
 .card.is-celebrating .hero-heart { animation-duration: 0.8s; }
 
+/* ---------- Stickers and memes ---------- */
+.sticker-layer {
+  --sticker-size: clamp(70px, 9vw, 120px);
+  --meme-size: clamp(130px, 15vw, 220px);
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Stickers */
+.sticker {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--sticker-size);
+  height: var(--sticker-size);
+  opacity: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  animation: sticker-in 0.8s cubic-bezier(0.3, 1.4, 0.4, 1) var(--enter-delay) forwards;
+}
+.sticker.boing { animation: sticker-boing 0.6s ease forwards; }
+
+.sticker-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* White outline made from stacked shadows, so it looks like a die-cut sticker */
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff)
+          drop-shadow(0 -2px 0 #fff) drop-shadow(0 6px 8px rgba(201, 24, 74, 0.3));
+  animation: sticker-idle var(--idle-speed) ease-in-out calc(var(--enter-delay) + 0.8s) infinite;
+}
+.sticker-art svg { display: block; width: 100%; height: 100%; }
+
+.bubble {
+  position: absolute;
+  left: 60%;
+  bottom: 90%;
+  padding: 0.2em 0.65em;
+  font-weight: 800;
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  white-space: nowrap;
+  color: var(--red-700);
+  background: var(--white);
+  border: 2px solid var(--pink-300);
+  border-radius: 14px 14px 14px 2px;
+  opacity: 0;
+  transform-origin: bottom left;
+  animation: bubble-pop 4.5s ease-in-out var(--bubble-delay) infinite;
+}
+.sticker.is-right .bubble {
+  left: auto;
+  right: 60%;
+  border-radius: 14px 14px 2px 14px;
+  transform-origin: bottom right;
+}
+
+/* Sticker positions: corners and sides on big screens */
+.s1 { --x: 4%; --y: 5%; }
+.s2 { --x: calc(100% - var(--sticker-size) - 4%); --y: 5%; }
+.s3 { --x: 4%; --y: calc(100% - var(--sticker-size) - 5%); }
+.s4 { --x: calc(100% - var(--sticker-size) - 4%); --y: calc(100% - var(--sticker-size) - 5%); }
+.s5 { --x: 18%; --y: 60%; }
+.s6 { --x: calc(100% - var(--sticker-size) - 18%); --y: 14%; }
+
+/* Meme cards */
+.meme {
+  position: absolute;
+  width: var(--meme-size);
+  height: var(--meme-size);
+  overflow: hidden;
+  opacity: 0;
+  background: linear-gradient(160deg, var(--pink-100), var(--pink-300));
+  border: 5px solid var(--white);
+  border-radius: 14px;
+  box-shadow: 0 12px 26px rgba(201, 24, 74, 0.3);
+  animation: meme-in 0.9s cubic-bezier(0.2, 1.3, 0.4, 1) var(--enter-delay) forwards;
+}
+.meme-a { left: 5%; top: 28%; }
+.meme-b { right: 5%; top: 36%; }
+
+.meme-inner { position: absolute; inset: 0; }
+.meme-inner.is-swapping { animation: meme-swap 0.45s ease; }
+
+.meme-face { position: absolute; left: 20%; top: 20%; width: 60%; height: 60%; }
+.meme-face svg { display: block; width: 100%; height: 100%; }
+
+.meme-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 0 5%;
+  text-align: center;
+  text-transform: uppercase;
+  font-family: Impact, "Arial Black", "Haettenschweiler", sans-serif;
+  font-weight: 900;
+  font-size: calc(var(--meme-size) * 0.1);
+  line-height: 1.05;
+  color: var(--white);
+  text-shadow: -1.5px -1.5px 0 var(--red-700), 1.5px -1.5px 0 var(--red-700),
+               -1.5px 1.5px 0 var(--red-700), 1.5px 1.5px 0 var(--red-700);
+}
+.meme-top { top: 4%; }
+.meme-bottom { bottom: 4%; }
+
+/* Tap burst */
+.burst-piece {
+  position: absolute;
+  opacity: 0;
+  animation: burst 0.9s ease-out forwards;
+}
+
 /* ---------- Keyframes ---------- */
 @keyframes card-in {
   from { opacity: 0; transform: translateY(24px) scale(0.95); }
@@ -225,6 +340,38 @@ h1 {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
+@keyframes sticker-in {
+  from { opacity: 0; transform: scale(0) rotate(-120deg); }
+  60% { opacity: 1; transform: scale(1.25) rotate(calc(var(--tilt) + 10deg)); }
+  to { opacity: 1; transform: scale(1) rotate(var(--tilt)); }
+}
+@keyframes sticker-idle {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-10px) rotate(4deg); }
+}
+@keyframes sticker-boing {
+  0% { opacity: 1; transform: scale(1) rotate(var(--tilt)); }
+  30% { opacity: 1; transform: scale(1.5) rotate(calc(var(--tilt) - 25deg)); }
+  60% { opacity: 1; transform: scale(0.85) rotate(calc(var(--tilt) + 20deg)); }
+  100% { opacity: 1; transform: scale(1) rotate(var(--tilt)); }
+}
+@keyframes bubble-pop {
+  0%, 8% { opacity: 0; transform: scale(0.4); }
+  14%, 38% { opacity: 1; transform: scale(1); }
+  46%, 100% { opacity: 0; transform: scale(0.8); }
+}
+@keyframes meme-in {
+  from { opacity: 0; transform: scale(0.2) rotate(-90deg); }
+  to { opacity: 1; transform: scale(1) rotate(var(--tilt)); }
+}
+@keyframes meme-swap {
+  0%, 100% { transform: scale(1) rotate(0); }
+  40% { transform: scale(0.8) rotate(-4deg); }
+}
+@keyframes burst {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--spin)); }
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 420px) {
@@ -233,7 +380,25 @@ h1 {
   .btn-no { padding: 12px 24px; font-size: 1.05rem; }
 }
 
+/* Smaller screens: four corner stickers, one meme above and one below the card */
+@media (max-width: 1100px) {
+  .sticker-layer {
+    --sticker-size: clamp(56px, 14vw, 84px);
+    --meme-size: clamp(96px, 24vw, 150px);
+  }
+  .s1 { --x: 2%; --y: 2%; }
+  .s2 { --x: calc(100% - var(--sticker-size) - 2%); --y: 2%; }
+  .s3 { --x: 2%; --y: calc(100% - var(--sticker-size) - 2%); }
+  .s4 { --x: calc(100% - var(--sticker-size) - 2%); --y: calc(100% - var(--sticker-size) - 2%); }
+  .s5, .s6 { display: none; }
+
+  .meme-a { left: 50%; right: auto; top: 7%; margin-left: calc(var(--meme-size) / -2); }
+  .meme-b { left: 50%; right: auto; top: auto; bottom: 7%; margin-left: calc(var(--meme-size) / -2); }
+}
+@media (max-height: 520px) { .meme { display: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   .hero-heart, .btn-yes, .card.is-celebrating h1 { animation: none; }
   .btn-no.is-floating { transition: none; }
+  .sticker-art, .bubble { animation: none; }
 }
