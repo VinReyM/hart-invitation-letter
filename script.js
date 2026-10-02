@@ -12,13 +12,12 @@ const COLORS = ["#ff7a9c", "#f03e5f", "#ffb3c6", "#c9184a", "#ffffff"];
 const NO_MESSAGES = ["No", "Nice try!", "Too slow!", "Catch me!", "Nope!", "Try again!"];
 const VIEWPORT_MARGIN = 10;      // minimum gap between the No button and the screen edge
 const DODGE_DISTANCE = 70;       // how close the pointer can get before the button runs away
-const DODGE_COOLDOWN_MS = 220;   // stops it from jittering while mid-flight
+const DODGE_COOLDOWN_MS = 120;   // stops it from jittering while mid-flight
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let isCelebrating = false;
 let hasStartedDodging = false;
 let lastDodgeTime = 0;
-let noPlaceholder = null;
 // Where the No button is (or is heading), tracked so proximity checks ignore mid-flight positions
 let noTarget = { x: 0, y: 0, width: 0, height: 0 };
 
@@ -101,18 +100,24 @@ function getViewportSize() {
   return { width: document.documentElement.clientWidth, height: window.innerHeight };
 }
 
-// Lift the button out of the layout the first time it runs, leaving a spacer so Yes doesn't jump
+// Lift the button out of the card the first time it runs. It must live directly in <body>:
+// the card's backdrop-filter would otherwise make "fixed" positions relative to the card.
+// A spacer keeps the Yes button from shifting.
 function makeNoButtonFloating() {
   const rect = noButton.getBoundingClientRect();
-  noPlaceholder = document.createElement("span");
-  noPlaceholder.style.width = `${rect.width}px`;
-  noPlaceholder.style.height = `${rect.height}px`;
-  buttonRow.insertBefore(noPlaceholder, noButton);
 
+  const placeholder = document.createElement("span");
+  placeholder.style.width = `${rect.width}px`;
+  placeholder.style.height = `${rect.height}px`;
+  buttonRow.insertBefore(placeholder, noButton);
+
+  document.body.appendChild(noButton);
   noButton.classList.add("is-floating");
   noButton.style.left = `${rect.left}px`;
   noButton.style.top = `${rect.top}px`;
   noButton.getBoundingClientRect(); // flush styles so the first move animates
+
+  noTarget = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
   hasStartedDodging = true;
 }
 
@@ -155,10 +160,10 @@ function pickNewPosition(pointerX, pointerY) {
   return bestCandidate || { x: random(VIEWPORT_MARGIN, maxX), y: random(VIEWPORT_MARGIN, maxY) };
 }
 
-function dodge(pointerX, pointerY) {
+function dodge(pointerX, pointerY, { force = false } = {}) {
   if (isCelebrating) return;
   const now = performance.now();
-  if (now - lastDodgeTime < DODGE_COOLDOWN_MS) return;
+  if (!force && now - lastDodgeTime < DODGE_COOLDOWN_MS) return;
   lastDodgeTime = now;
 
   if (!hasStartedDodging) makeNoButtonFloating();
@@ -200,14 +205,18 @@ document.addEventListener("pointermove", (event) => {
   }
 });
 
+// Direct hover always dodges, even if the cooldown is still running
+noButton.addEventListener("pointerenter", (event) => {
+  dodge(event.clientX, event.clientY, { force: true });
+});
+
 // Touch: move the button the instant a finger lands near it, before the tap can complete
 document.addEventListener(
   "pointerdown",
   (event) => {
     if (isCelebrating) return;
     if (distanceToNoButton(event.clientX, event.clientY) < DODGE_DISTANCE) {
-      lastDodgeTime = 0; // a direct press always dodges
-      dodge(event.clientX, event.clientY);
+      dodge(event.clientX, event.clientY, { force: true });
     }
   },
   { passive: true }
@@ -216,16 +225,14 @@ document.addEventListener(
 noButton.addEventListener("touchstart", (event) => {
   event.preventDefault();
   const touch = event.touches[0];
-  lastDodgeTime = 0;
-  dodge(touch.clientX, touch.clientY);
+  dodge(touch.clientX, touch.clientY, { force: true });
 }, { passive: false });
 
-// Keyboard or a click that slips through still just makes it dodge
+// A click (or keyboard press) that slips through just makes it dodge again
 noButton.addEventListener("click", (event) => {
   event.preventDefault();
   const rect = noButton.getBoundingClientRect();
-  lastDodgeTime = 0;
-  dodge(event.clientX || rect.left + rect.width / 2, event.clientY || rect.top + rect.height / 2);
+  dodge(event.clientX || rect.left + rect.width / 2, event.clientY || rect.top + rect.height / 2, { force: true });
 });
 
 // Keep the button on screen if the window is resized or rotated
