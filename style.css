@@ -13,6 +13,9 @@
 
 * { box-sizing: border-box; }
 
+/* Make the hidden attribute always win over display rules */
+[hidden] { display: none !important; }
+
 html, body {
   height: 100%;
   margin: 0;
@@ -177,6 +180,95 @@ h1 {
 }
 .card.is-celebrating .sub { animation: pop-in 0.6s 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
 .card.is-celebrating .hero-heart { animation-duration: 0.8s; }
+
+/* ---------- Music player ---------- */
+.player {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 22px auto 0;
+  padding: 10px 20px 10px 10px;
+  background: var(--white);
+  border: 2px solid var(--pink-300);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(255, 122, 156, 0.25);
+  animation: pop-in 0.6s 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.disc {
+  position: relative;
+  flex: none;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.disc-art {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--pink-500) 0 24%, #2b0a16 25% 27%, transparent 28%),
+    repeating-radial-gradient(circle, #3a1020 0 2px, #4e1830 2px 4px);
+  box-shadow: 0 4px 10px rgba(201, 24, 74, 0.35);
+  animation: spin 3s linear infinite paused;
+}
+/* a highlight so the spin is visible */
+.disc-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 20%, rgba(255,255,255,.28) 25%, transparent 30% 70%, rgba(255,255,255,.2) 75%, transparent 80%);
+}
+.disc-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  clip-path: polygon(32% 18%, 82% 50%, 32% 82%); /* play triangle */
+}
+.player.is-playing .disc-art { animation-play-state: running; }
+.player.is-playing .disc-icon {
+  clip-path: none; /* pause bars */
+  background: linear-gradient(90deg, transparent 0 26%, #fff 26% 44%, transparent 44% 56%, #fff 56% 74%, transparent 74%);
+}
+
+.player-info { display: flex; flex-direction: column; text-align: left; line-height: 1.2; }
+.player-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pink-500);
+}
+.player-title { font-size: clamp(0.95rem, 3.6vw, 1.15rem); font-weight: 800; color: var(--red-700); }
+
+.eq { display: flex; align-items: flex-end; gap: 3px; height: 22px; }
+.eq i {
+  display: block;
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--red-500);
+  transform: scaleY(0.25);
+  transform-origin: bottom;
+  animation: eq 0.8s ease-in-out infinite alternate paused;
+}
+.eq i:nth-child(2) { animation-delay: -0.3s; }
+.eq i:nth-child(3) { animation-delay: -0.6s; }
+.eq i:nth-child(4) { animation-delay: -0.15s; }
+.player.is-playing .eq i { animation-play-state: running; }
 
 /* ---------- Stickers and memes ---------- */
 .sticker-layer {
@@ -372,6 +464,8 @@ h1 {
   0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
   100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--spin)); }
 }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes eq { from { transform: scaleY(0.2); } to { transform: scaleY(1); } }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 420px) {
@@ -401,4 +495,5 @@ h1 {
   .hero-heart, .btn-yes, .card.is-celebrating h1 { animation: none; }
   .btn-no.is-floating { transition: none; }
   .sticker-art, .bubble { animation: none; }
+  .disc-art, .eq i { animation: none; }
 }
