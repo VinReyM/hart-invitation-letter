@@ -442,6 +442,40 @@ function showStickersAndMemes() {
   document.addEventListener("pointerdown", (event) => spawnBurst(event.clientX, event.clientY));
 }
 
+// ---------- Music ----------
+const song = document.getElementById("song");
+const player = document.getElementById("player");
+const musicToggle = document.getElementById("musicToggle");
+
+function syncPlayer() {
+  const playing = !song.paused;
+  player.classList.toggle("is-playing", playing);
+  musicToggle.setAttribute("aria-label", playing ? "Pause music" : "Play music");
+}
+song.addEventListener("play", syncPlayer);
+song.addEventListener("pause", syncPlayer);
+
+musicToggle.addEventListener("click", () => {
+  song.paused ? song.play().catch(() => {}) : song.pause();
+});
+// don't let the player tap trigger the screen-wide heart burst twice
+musicToggle.addEventListener("pointerdown", (event) => event.stopPropagation());
+
+function startSong() {
+  player.hidden = false;
+  song.volume = 0;
+  song.play().then(() => {
+    // gentle 2-second fade-in
+    const fade = setInterval(() => {
+      song.volume = Math.min(song.volume + 0.05, 0.85);
+      if (song.volume >= 0.85) clearInterval(fade);
+    }, 100);
+  }).catch(() => {
+    // missing file or blocked: the player still shows so she can press play
+    syncPlayer();
+  });
+}
+
 // ---------- Yes button: celebration ----------
 function celebrate() {
   if (isCelebrating) return;
@@ -456,6 +490,7 @@ function celebrate() {
   subMessage.hidden = false;
   card.classList.add("is-celebrating");
   showStickersAndMemes();
+  startSong();
 
   if (prefersReducedMotion) {
     for (let i = 0; i < 12; i++) spawnRainHeart();
