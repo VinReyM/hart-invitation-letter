@@ -19,6 +19,20 @@
       <h1 id="message">Will you go out with me?</h1>
       <p class="sub" id="subMessage" hidden>AYIEEEEEEE!</p>
 
+      <!-- Music player (shown after Yes) -->
+      <div class="player" id="player" hidden>
+        <button type="button" class="disc" id="musicToggle" aria-label="Pause music">
+          <span class="disc-art"></span>
+          <span class="disc-icon"></span>
+        </button>
+        <div class="player-info">
+          <span class="player-label">Now playing</span>
+          <span class="player-title">I Love You Too Much</span>
+        </div>
+        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <audio id="song" src="i-love-you-too-much.mp3" preload="auto" loop></audio>
+
       <div class="buttons" id="buttons">
         <button type="button" class="btn btn-yes" id="yesButton">Yes</button>
         <button type="button" class="btn btn-no" id="noButton">No</button>
